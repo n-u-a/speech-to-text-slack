@@ -8,6 +8,8 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@slack/web-api": "^6.5.1",
+    "axios": "^0.24.0",
     "core-js": "^3.6.5",
     "jquery": "^3.6.0",
     "uikit": "^3.9.4",

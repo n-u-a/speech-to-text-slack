@@ -9,8 +9,8 @@
           >Use language</label
         >
         <div class="uk-margin uk-grid-small uk-child-width-auto uk-grid">
-          <label
-            ><input
+          <label>
+            <input
               class="uk-radio"
               type="radio"
               value="en"
@@ -19,16 +19,16 @@
             />
             EN</label
           >
-          <label
-            ><input class="uk-radio" type="radio" value="ja" name="radio2" />
-            JA</label
-          >
-          <label
-            ><input class="uk-radio" type="radio" value="fr" name="radio2" />
+          <label>
+            <input class="uk-radio" type="radio" value="ja" name="radio2" />
+            JA
+          </label>
+          <label>
+            <input class="uk-radio" type="radio" value="fr" name="radio2" />
             FR</label
           >
-          <label
-            ><input class="uk-radio" type="radio" value="de" name="radio2" />
+          <label>
+            <input class="uk-radio" type="radio" value="de" name="radio2" />
             DE</label
           >
           <label
@@ -166,7 +166,6 @@ global.jquery = jQuery;
 global.$ = jQuery;
 window.$ = window.jQuery = require("jquery");
 export default {
-  name: "HelloWorld",
   data: () => {
     return {
       recorder: "",
@@ -205,12 +204,12 @@ export default {
           }
 
           // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-          return new Promise(function (resolve, reject) {
+          return new Promise((resolve, reject) => {
             getUserMedia.call(navigator, constraints, resolve, reject);
           });
         };
       }
-      window.URL = window.URL || window.webkitURL;
+      // window.URL = window.URL || window.webkitURL;
 
       this.audio_context = new AudioContext();
       this.__log("Audio context set up.");
@@ -224,10 +223,10 @@ export default {
 
     navigator.mediaDevices
       .getUserMedia({ audio: true })
-      .then(function (stream) {
+      .then((stream) => {
         this.startUserMedia(stream);
       })
-      .catch(function (e) {
+      .catch((e) => {
         this.__log("No live audio input: " + e);
       });
 
@@ -326,18 +325,19 @@ export default {
       };
 
       this.recognition.onresult = (event) => {
-        var results = event.results;
-        for (var i = event.resultIndex; i < results.length; i++) {
+        let results = event.results;
+        let rogh = window.$("#result_text").val();
+        // window.$("#result_text").val("");
+        for (let i = event.resultIndex; i < results.length; i++) {
           if (results[i].isFinal) {
             let text = results[i][0].transcript;
-            window.$("#result_text").val(text);
+            window.$("#result_text").val(rogh + text);
             // call_slack(text);
             this.recognition.stop();
             console.log("onresultでストップ");
-            this.record();
           } else {
             let text = results[i][0].transcript;
-            window.$("#result_text").val(text);
+            window.$("#result_text").val(rogh + text);
             this.flag_speech = 1;
           }
         }
@@ -380,7 +380,7 @@ export default {
             url: url,
             dataType: "json",
             processData: false,
-            success: function () {
+            success: () => {
               console.log("OK");
             },
           });
@@ -388,7 +388,8 @@ export default {
     },
     /**
      * 録音を開始
-     */ startRecording() {
+     */
+    startRecording() {
       this.recorder && this.recorder.record();
       // button.disabled = true;
       // button.nextElementSibling.disabled = false;
@@ -397,26 +398,48 @@ export default {
 
     /**
      * 録音を停止
-     */ stopRecording() {
+     */
+    stopRecording() {
       this.recorder && this.recorder.stop();
       // button.disabled = true;
       // button.previousElementSibling.disabled = false;
       this.__log("Stopped recording.");
 
       // create WAV download link using audio data blob
-      // createDownloadLink();
+      this.createDownloadLink();
 
-      // this.recorder.clear();
+      this.recorder.clear();
+    },
+    /**
+     * ダウンロードリンク作成
+     */
+    createDownloadLink() {
+      this.recorder &&
+        this.recorder.exportWAV((blob) => {
+          var url = URL.createObjectURL(blob);
+          var li = document.createElement("li");
+          var au = document.createElement("audio");
+          var hf = document.createElement("a");
+
+          au.controls = true;
+          au.src = url;
+          hf.href = url;
+          hf.download = new Date().toISOString() + ".wav";
+          hf.innerHTML = hf.download;
+          li.appendChild(au);
+          li.appendChild(hf);
+          window.$("#recordingslist").append(li);
+        });
     },
     /**
      * cookieに保管されている値を取得
      * @returns cookies
      */
     get_cookies() {
-      var result = [];
-      var cookies = document.cookie.split(";");
-      for (var cookie of cookies) {
-        var kv = cookie.trim().split("=");
+      let result = [];
+      let cookies = document.cookie.split(";");
+      for (let cookie of cookies) {
+        let kv = cookie.trim().split("=");
         result[kv[0]] = decodeURIComponent(kv[1]);
       }
       return result;
@@ -427,7 +450,7 @@ export default {
      * @param {*} data
      */
     save_cookies(data) {
-      for (var k in data) {
+      for (let k in data) {
         document.cookie = k + "=" + encodeURIComponent(data[k]) + ";";
       }
     },
@@ -436,13 +459,13 @@ export default {
      * cookieから設定情報を復元
      */
     restore_input_from_cookie() {
-      var cookies = this.get_cookies();
-      for (var key of this.COOKIE_KEYS) {
+      let cookies = this.get_cookies();
+      for (let key of this.COOKIE_KEYS) {
         window.$("#" + key).val(cookies[key]);
       }
-      var lang = cookies[this.LANG_KEY];
+      let lang = cookies[this.LANG_KEY];
       if (lang) {
-        var radio = Object.values(window.$(`.uk-radio[value=${lang}]`));
+        let radio = Object.values(window.$(`.uk-radio[value=${lang}]`));
         if (radio.length >= 0) {
           radio[0].checked = true;
         }
@@ -453,11 +476,11 @@ export default {
      * cookieに保存する設定情報を取得し、save_cookiesを利用
      */
     save_input_to_cookie() {
-      var data = {};
-      for (var key of this.COOKIE_KEYS) {
+      let data = {};
+      for (let key of this.COOKIE_KEYS) {
         data[key] = window.$("#" + key).val();
       }
-      var lang_radios = window.$(".uk-radio:checked");
+      let lang_radios = window.$(".uk-radio:checked");
       if (lang_radios.length >= 0) {
         data[this.LANG_KEY] = lang_radios[0].value;
       }
