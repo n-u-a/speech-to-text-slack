@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  speech-to-text:
+    container_name: vue
+    build: ./docker/web
+    ports:
+      - 8585:8080
+    privileged: true
+    volumes:
+      - .:/app
+    tty: true
+    stdin_open: true
+    command: /bin/sh
