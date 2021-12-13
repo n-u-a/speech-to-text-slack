@@ -122,7 +122,7 @@
           <label class="uk-form-label" for="form-horizontal-text">Result</label>
           <div class="uk-form-controls">
             <textarea
-              class="uk-disabled uk-textarea"
+              class="uk-textarea"
               id="result_text"
               placeholder="RESULT"
             ></textarea>
@@ -175,6 +175,7 @@ export default {
       flag_speech: 0,
       COOKIE_KEYS: ["webhook", "name", "image", "channel"],
       LANG_KEY: "lang",
+      line: "",
     };
   },
   props: {
@@ -284,6 +285,7 @@ export default {
           .removeClass("uk-button-primary")
           .addClass("uk-button-danger");
         this.flag_now_recording = true;
+        window.$("#result_text").val("START");
         this.startRecording();
         this.record();
       }
@@ -326,30 +328,41 @@ export default {
 
       this.recognition.onresult = (event) => {
         let results = event.results;
-        let rogh = window.$("#result_text").val();
-        // window.$("#result_text").val("");
         for (let i = event.resultIndex; i < results.length; i++) {
           if (results[i].isFinal) {
             let text = results[i][0].transcript;
-            window.$("#result_text").val(rogh + text);
+            this.line += text + "。\n";
+            window.$("#result_text").val(this.line);
+            console.log("text", text);
+            console.log("this.line", this.line);
             // call_slack(text);
             this.recognition.stop();
             console.log("onresultでストップ");
           } else {
             let text = results[i][0].transcript;
-            window.$("#result_text").val(rogh + text);
+            window.$("#result_text").val(this.line + text);
             this.flag_speech = 1;
           }
         }
       };
 
-      window.$("#result_text").val("START");
       this.flag_speech = 0;
       this.recognition.start();
       console.log("スタートが動いています");
 
       window.$("#send").on("click", () => {
         console.log("送る");
+      });
+
+      window.$(function () {
+        window.$("textarea").on("change keyup keydown paste cut", function () {
+          if (window.$(this).outerHeight() > this.scrollHeight) {
+            window.$(this).height(1);
+          }
+          while (window.$(this).outerHeight() < this.scrollHeight) {
+            window.$(this).height(window.$(this).height() + 1);
+          }
+        });
       });
     },
     /**
