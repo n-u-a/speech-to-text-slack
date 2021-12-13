@@ -354,6 +354,7 @@ export default {
         console.log("送る");
       });
 
+      // textarea拡張の設定
       window.$(function () {
         window.$("textarea").on("change keyup keydown paste cut", function () {
           if (window.$(this).outerHeight() > this.scrollHeight) {
