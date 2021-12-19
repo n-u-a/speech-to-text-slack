@@ -380,14 +380,14 @@ export default {
       console.log(text);
       this.recorder &&
         this.recorder.exportWAV((blob) => {
-          axios.defaults.headers.post["Access-Control-Allow-Origin"] =
-            "https://slack.com";
-          axios.defaults.headers.post["Access-Control-Allow-Credentials"] =
-            "true";
+          // axios.defaults.headers.post["Access-Control-Allow-Origin"] =
+          //   "https://slack.com";
+          // axios.defaults.headers.post["Access-Control-Allow-Credentials"] =
+          //   "true";
           const request = axios.create({
             baseURL: "https://slack.com",
           });
-          console.log(request);
+          console.log("request", request);
 
           const params = new FormData();
           params.append("channels", "#test");
