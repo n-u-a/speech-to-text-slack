@@ -51,15 +51,15 @@
 
         <div class="uk-margin">
           <label class="uk-form-label" for="form-horizontal-text"
-            >Webhook Url</label
+            >Bot OAuth Token</label
           >
           <div class="uk-form-controls">
             <input
               class="uk-input"
-              name="webhook"
-              id="webhook"
+              name="oauth-token"
+              id="oauth-token"
               type="text"
-              placeholder="https://hooks.slack.com/services/xxxxx..."
+              placeholder="xoxb-hogehogehoge-fugafugafuga"
             />
           </div>
         </div>
@@ -174,7 +174,7 @@ export default {
       recognition: "",
       flag_push_enable: 0,
       flag_speech: 0,
-      COOKIE_KEYS: ["webhook", "name", "image", "channel"],
+      COOKIE_KEYS: ["oauth-token", "name", "image", "channel"],
       LANG_KEY: "lang",
       line: "",
     };
@@ -242,6 +242,11 @@ export default {
 
     window.$("#slack-submit").on("click", () => {
       this.call_slack("Slack Notify");
+    });
+
+    window.$("#send").on("click", () => {
+      this.line = "";
+      this.call_slack("slack投稿");
     });
   },
   methods: {
@@ -349,11 +354,6 @@ export default {
       this.recognition.start();
       console.log("スタートが動いています");
 
-      window.$("#send").on("click", () => {
-        this.line = "";
-        this.call_slack("slack投稿");
-      });
-
       // textarea拡張の設定
       window.$(function () {
         window.$("textarea").on("change keyup keydown paste cut", function () {
@@ -371,34 +371,34 @@ export default {
      * @param {*} text
      */
     call_slack(text) {
-      var url = window.$("#webhook").val();
+      var url = window.$("#oauth-token").val();
       console.log(text);
       this.recorder &&
         this.recorder.exportWAV((wav) => {
           // axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
           axios.defaults.headers["content-type"] = "multipart/form-data";
-          axios.defaults.headers["Access-Control-Allow-Headers"] =
-            "Authorization";
+          // axios.defaults.headers["Access-Control-Allow-Headers"] =
+          //   "Authorization";
+          // axios.defaults.headers["Accept"] = "Authorization";
           // axios.defaults.headers.common["Authorization"] = `Bearer ${url}`;
           const request = axios.create({
             baseURL: "https://slack.com/api",
           });
-          console.log("request", request);
 
           const params = new FormData();
           params.append("channels", "#test");
           params.append("file", wav);
+          params.append("token", url);
+          params.append("initial_comment", window.$("#result_text").val());
+          params.append("filename", "telechat");
+          params.append("title", "new file");
           request
-            .post("/files.upload", params, {
-              headers: {
-                Authorization: `Bearer ${url}`,
-              },
-            })
+            .post("/files.upload", params)
             .then((res) => {
               console.log(res);
             })
             .catch((e) => {
-              console.log(e);
+              console.log("axios Error　：", e);
             });
         });
     },

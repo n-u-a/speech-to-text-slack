@@ -1,6 +1,6 @@
 module.exports = {
     devServer: {
-        https: true
+        https: true,
     },
     outputDir: '../docs',
     assetsDir: './',
