@@ -350,8 +350,6 @@ export default {
       console.log("スタートが動いています");
 
       window.$("#send").on("click", () => {
-        console.log("送るクリックされる");
-        console.log("送る");
         this.line = "";
         window.$("#result_text").empty();
         this.call_slack("slack投稿");
