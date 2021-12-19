@@ -161,6 +161,7 @@
 
 <script>
 import Recorder from "../../lib/recorder.js";
+import axios from "axios";
 import jQuery from "jquery";
 global.jquery = jQuery;
 global.$ = jQuery;
@@ -333,8 +334,6 @@ export default {
             let text = results[i][0].transcript;
             this.line += text + "。\n";
             window.$("#result_text").val(this.line);
-            console.log("text", text);
-            console.log("this.line", this.line);
             // call_slack(text);
             this.recognition.stop();
             console.log("onresultでストップ");
@@ -351,7 +350,11 @@ export default {
       console.log("スタートが動いています");
 
       window.$("#send").on("click", () => {
+        console.log("送るクリックされる");
         console.log("送る");
+        this.line = "";
+        window.$("#result_text").empty();
+        this.call_slack("slack投稿");
       });
 
       // textarea拡張の設定
@@ -372,32 +375,53 @@ export default {
      */
     call_slack(text) {
       var url = window.$("#webhook").val();
-      var name = window.$("#name").val();
-      var url_image = window.$("#image").val();
-      var channel = window.$("#channel").val();
-      var msg = `${text}`;
+      // var name = window.$("#name").val();
+      // var url_image = window.$("#image").val();
+      // var channel = window.$("#channel").val();
+      // var msg = `${text}`;
+      console.log(text);
       this.recorder &&
         this.recorder.exportWAV((blob) => {
-          let formData = new FormData();
-          formData.append("data", blob);
-          window.$.ajax({
-            data:
-              "payload=" +
-              JSON.stringify({
-                text: msg,
-                username: name,
-                icon_url: url_image,
-                channel: channel,
-                voice: formData,
-              }),
-            type: "POST",
-            url: url,
-            dataType: "json",
-            processData: false,
-            success: () => {
-              console.log("OK");
-            },
+          axios.defaults.headers.post["Access-Control-Allow-Origin"] =
+            "https://slack.com";
+          axios.defaults.headers.post["Access-Control-Allow-Credentials"] =
+            "true";
+          const request = axios.create({
+            baseURL: "https://slack.com",
           });
+          console.log(request);
+
+          const params = new FormData();
+          params.append("channels", "#test");
+          params.append("file", blob);
+          request
+            .post("/api/files.upload", params, {
+              headers: {
+                Authorization: `Bearer ${url}`,
+              },
+            })
+            .then((res) => {
+              console.log(res);
+            });
+
+          // window.$.ajax({
+          //   data:
+          //     "payload=" +
+          //     JSON.stringify({
+          //       text: msg,
+          //       username: name,
+          //       icon_url: url_image,
+          //       channel: channel,
+          //       voice: formData,
+          //     }),
+          //   type: "POST",
+          //   url: url,
+          //   dataType: "json",
+          //   processData: false,
+          //   success: () => {
+          //     console.log("OK");
+          //   },
+          // });
         });
     },
     /**

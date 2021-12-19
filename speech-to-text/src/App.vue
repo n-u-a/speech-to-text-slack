@@ -1,17 +1,26 @@
 <template>
-  <div id="app">
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+  <div>
+    <!-- <div id="app">
+      <HelloWorld msg="Welcome to Your Vue.js App" />
+    </div> -->
+    <router-view v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </router-view>
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+// import HelloWorld from "./components/HelloWorld.vue";
+// import Auth from "./components/Auth.vue";
 
 export default {
   name: "App",
-  components: {
-    HelloWorld,
-  },
+  // components: {
+  //   HelloWorld,
+  //   Auth,
+  // },
 };
 </script>
 
