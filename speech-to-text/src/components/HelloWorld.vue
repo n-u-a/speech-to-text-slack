@@ -351,7 +351,6 @@ export default {
 
       window.$("#send").on("click", () => {
         this.line = "";
-        window.$("#result_text").empty();
         this.call_slack("slack投稿");
       });
 
@@ -373,27 +372,24 @@ export default {
      */
     call_slack(text) {
       var url = window.$("#webhook").val();
-      // var name = window.$("#name").val();
-      // var url_image = window.$("#image").val();
-      // var channel = window.$("#channel").val();
-      // var msg = `${text}`;
       console.log(text);
       this.recorder &&
-        this.recorder.exportWAV((blob) => {
-          // axios.defaults.headers.post["Access-Control-Allow-Origin"] =
-          //   "https://slack.com";
-          // axios.defaults.headers.post["Access-Control-Allow-Credentials"] =
-          //   "true";
+        this.recorder.exportWAV((wav) => {
+          // axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
+          axios.defaults.headers["content-type"] = "multipart/form-data";
+          axios.defaults.headers["Access-Control-Allow-Headers"] =
+            "Authorization";
+          // axios.defaults.headers.common["Authorization"] = `Bearer ${url}`;
           const request = axios.create({
-            baseURL: "https://slack.com",
+            baseURL: "https://slack.com/api",
           });
           console.log("request", request);
 
           const params = new FormData();
           params.append("channels", "#test");
-          params.append("file", blob);
+          params.append("file", wav);
           request
-            .post("/api/files.upload", params, {
+            .post("/files.upload", params, {
               headers: {
                 Authorization: `Bearer ${url}`,
               },
@@ -404,25 +400,6 @@ export default {
             .catch((e) => {
               console.log(e);
             });
-
-          // window.$.ajax({
-          //   data:
-          //     "payload=" +
-          //     JSON.stringify({
-          //       text: msg,
-          //       username: name,
-          //       icon_url: url_image,
-          //       channel: channel,
-          //       voice: formData,
-          //     }),
-          //   type: "POST",
-          //   url: url,
-          //   dataType: "json",
-          //   processData: false,
-          //   success: () => {
-          //     console.log("OK");
-          //   },
-          // });
         });
     },
     /**
