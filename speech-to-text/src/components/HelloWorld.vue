@@ -65,14 +65,16 @@
         </div>
 
         <div class="uk-margin">
-          <label class="uk-form-label" for="form-horizontal-text">Name</label>
+          <label class="uk-form-label" for="form-horizontal-text"
+            >File Name</label
+          >
           <div class="uk-form-controls">
             <input
               class="uk-input"
               name="name"
               id="name"
               type="text"
-              placeholder="your bot name"
+              placeholder="file name (default: new file)"
             />
           </div>
         </div>
@@ -88,18 +90,6 @@
               id="channel"
               type="text"
               placeholder="#random"
-            />
-          </div>
-        </div>
-
-        <div class="uk-margin">
-          <label class="uk-form-label" for="form-horizontal-text">Image</label>
-          <div class="uk-form-controls">
-            <input
-              class="uk-input"
-              id="image"
-              type="text"
-              placeholder="https://example.com/your_icon_image.png"
             />
           </div>
         </div>
@@ -138,12 +128,6 @@
         /><br />
         <input
           type="button"
-          class="uk-button uk-button-secondary"
-          id="slack-submit"
-          value="SLACK NOTIFY TEST"
-        /><br />
-        <input
-          type="button"
           class="uk-button uk-button-primary"
           id="send"
           value="SEND MESSAGE"
@@ -151,9 +135,6 @@
 
         <h2>Recordings</h2>
         <ul id="recordingslist"></ul>
-
-        <h2>Log</h2>
-        <pre id="log"></pre>
       </fieldset>
     </form>
   </div>
@@ -283,7 +264,7 @@ export default {
           .removeClass("uk-button-danger")
           .addClass("uk-button-primary");
         this.flag_now_recording = false;
-        window.$("#send").off("click");
+        // window.$("#send").off("click");
       } else {
         window.$("#record").val("RECORD STOP");
         window
@@ -371,16 +352,16 @@ export default {
      * @param {*} text
      */
     call_slack(text) {
-      var url = window.$("#oauth-token").val();
+      let url = window.$("#oauth-token").val();
+      let fileName = window.$("#name").val();
+      console.log("fileName", fileName);
+      if (!fileName) {
+        fileName = "new file";
+      }
       console.log(text);
       this.recorder &&
         this.recorder.exportWAV((wav) => {
-          // axios.defaults.headers.post["Access-Control-Allow-Origin"] = "*";
-          axios.defaults.headers["content-type"] = "multipart/form-data";
-          // axios.defaults.headers["Access-Control-Allow-Headers"] =
-          //   "Authorization";
-          // axios.defaults.headers["Accept"] = "Authorization";
-          // axios.defaults.headers.common["Authorization"] = `Bearer ${url}`;
+          console.log("エクスポート完了");
           const request = axios.create({
             baseURL: "https://slack.com/api",
           });
@@ -391,11 +372,12 @@ export default {
           params.append("token", url);
           params.append("initial_comment", window.$("#result_text").val());
           params.append("filename", "telechat");
-          params.append("title", "new file");
+          params.append("title", fileName);
           request
             .post("/files.upload", params)
             .then((res) => {
               console.log(res);
+              this.recorder.clear();
             })
             .catch((e) => {
               console.log("axios Error　：", e);
@@ -424,7 +406,7 @@ export default {
       // create WAV download link using audio data blob
       this.createDownloadLink();
 
-      this.recorder.clear();
+      // this.recorder.clear();
     },
     /**
      * ダウンロードリンク作成
