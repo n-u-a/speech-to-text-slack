@@ -2,7 +2,7 @@ module.exports = {
     devServer: {
         https: true
     },
-    outputDir: 'docs',
+    outputDir: '../docs',
     assetsDir: './',
     publicPath: './'
 }
