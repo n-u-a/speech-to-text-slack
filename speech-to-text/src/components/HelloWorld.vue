@@ -83,8 +83,7 @@
           <div class="uk-form-controls">
             <input
               class="uk-input"
-              name="channel"
-              id="channel"
+              v-model="channels"
               type="text"
               placeholder="#random"
             />
@@ -98,7 +97,6 @@
           <div class="uk-form-controls">
             <input
               class="uk-disabled uk-input"
-              id="status"
               type="text"
               placeholder="STATE"
               :value="status"
@@ -111,7 +109,6 @@
           <div class="uk-form-controls">
             <textarea
               class="uk-textarea"
-              id="result_text"
               placeholder="RESULT"
               :value="resultText"
             ></textarea>
@@ -128,9 +125,8 @@
         <input
           type="button"
           class="uk-button uk-button-primary"
-          id="send"
           value="SEND MESSAGE"
-          @click="call_slack"
+          @click="callSlack"
         /><br />
 
         <h2>Recordings</h2>
@@ -163,6 +159,7 @@ export default {
       resultText: "",
       oauthToken: "",
       fileName: "",
+      channels: "",
     };
   },
   props: {
@@ -317,11 +314,15 @@ export default {
     /**
      * slackにメッセージ送信
      */
-    call_slack() {
+    callSlack() {
       console.log("slack処理開始");
       let fileName = this.fileName;
       if (!fileName) {
         fileName = "new file";
+      }
+      let channels = this.channels;
+      if (!channels) {
+        channels = "test";
       }
       this.recorder &&
         this.recorder.exportWAV((wav) => {
