@@ -195,7 +195,6 @@ export default {
           });
         };
       }
-      // window.URL = window.URL || window.webkitURL;
 
       this.audio_context = new AudioContext();
     } catch (e) {
@@ -365,8 +364,6 @@ export default {
      */
     startRecording() {
       this.recorder && this.recorder.record();
-      // button.disabled = true;
-      // button.nextElementSibling.disabled = false;
     },
 
     /**
@@ -374,9 +371,6 @@ export default {
      */
     stopRecording() {
       this.recorder && this.recorder.stop();
-      // button.disabled = true;
-      // button.previousElementSibling.disabled = false;
-
       // create WAV download link using audio data blob
       this.createDownloadLink();
     },
