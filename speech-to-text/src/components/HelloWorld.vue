@@ -85,7 +85,7 @@
               class="uk-input"
               v-model="channels"
               type="text"
-              placeholder="#random"
+              placeholder="#random (default: #test)"
             />
           </div>
         </div>
@@ -249,15 +249,21 @@ export default {
       window.SpeechRecognition =
         window.SpeechRecognition || window.webkitSpeechRecognition;
       this.recognition = new window.webkitSpeechRecognition();
+      // 文字起こしの言語を設定
       var str_lang = window.$('input:radio[name="radio2"]:checked').val();
       this.recognition.lang = str_lang;
+      // 録音途中での文字起こしを行う
       this.recognition.interimResults = true;
+      // 音声が止まっても録音を継続する
       this.recognition.continuous = true;
+
       this.save_input_to_cookie();
+
       let instance = this;
 
+      // eventListners
       this.recognition.onsoundstart = () => {
-        console.log("サウンドスタート");
+        console.log("onsoundstart");
         instance.status = "Recording";
       };
 
@@ -273,7 +279,8 @@ export default {
       };
 
       this.recognition.onsoundend = () => {
-        console.log("onsoundendでストップ");
+        // 音声停止直後処理
+        console.log("onsoundend");
         instance.status = "Stopped";
         instance.recognition.stop();
         instance.record();
@@ -284,7 +291,7 @@ export default {
           console.log("results", result);
           let text = result[0].transcript;
           if (result.isFinal) {
-            console.log("onresultでストップ");
+            // 音声停止直前処理
             instance.line += text + "。\n";
             instance.resultText = instance.line;
             instance.recognition.stop();
