@@ -99,7 +99,7 @@
               class="uk-disabled uk-input"
               type="text"
               placeholder="STATE"
-              :value="status"
+              :value="recordingStatus"
             />
           </div>
         </div>
@@ -146,20 +146,27 @@ window.$ = window.jQuery = require("jquery");
 export default {
   data: () => {
     return {
+      // レコード・文字起こしに利用するインスタンス
       recorder: "",
-      audio_context: "",
+      audioContext: "",
       recognition: "",
-      flag_speech: 0,
+
+      flagSpeech: 0,
       COOKIE_KEYS: ["oauthToken", "name", "image", "channel"],
       LANG_KEY: "lang",
-      line: "",
-      recordToggle: "RECORD START",
-      recordClass: "uk-button uk-button-primary",
-      status: "",
-      resultText: "",
       oauthToken: "",
       fileName: "",
       channels: "",
+
+      transcriptedText: "",
+      recordingStatus: "",
+
+      // ボタン制御
+      recordToggle: "RECORD START",
+      recordClass: "uk-button uk-button-primary",
+
+      // slackに送信されるテキスト
+      resultText: "",
     };
   },
   props: {
@@ -196,7 +203,7 @@ export default {
         };
       }
 
-      this.audio_context = new AudioContext();
+      this.audioContext = new AudioContext();
     } catch (e) {
       alert("No web audio support in this browser!");
     }
@@ -214,8 +221,8 @@ export default {
   },
   methods: {
     startUserMedia(stream) {
-      var input = this.audio_context.createMediaStreamSource(stream);
-      this.audio_context.resume();
+      var input = this.audioContext.createMediaStreamSource(stream);
+      this.audioContext.resume();
       this.recorder = new Recorder(input);
     },
     /**
@@ -224,10 +231,8 @@ export default {
     toggleRecording() {
       if (this.flag_now_recording) {
         if (this.recognition) {
-          console.log("toggleRecordingでストップ");
           this.recognition.stop();
         }
-        console.log("トグルオフ");
         this.stopRecording();
         this.recordToggle = "RECORD START";
         this.recordClass = "uk-button uk-button-primary";
@@ -263,16 +268,16 @@ export default {
       // eventListners
       this.recognition.onsoundstart = () => {
         console.log("onsoundstart");
-        instance.status = "Recording";
+        instance.recordingStatus = "Recording";
       };
 
       this.recognition.onnomatch = () => {
-        instance.status = "Retry";
+        instance.recordingStatus = "Retry";
       };
 
       this.recognition.onerror = (event) => {
-        instance.status = event.error;
-        if (instance.flag_speech == 0) {
+        instance.recordingStatus = event.error;
+        if (instance.flagSpeech == 0) {
           instance.record();
         }
       };
@@ -280,30 +285,29 @@ export default {
       this.recognition.onsoundend = () => {
         // 音声停止直後処理
         console.log("onsoundend");
-        instance.status = "Stopped";
+        instance.recordingStatus = "Stopped";
         instance.recognition.stop();
         instance.record();
       };
 
       this.recognition.onresult = (event) => {
         for (let result of event.results) {
-          console.log("results", result);
           let text = result[0].transcript;
           if (result.isFinal) {
             // 音声停止直前処理
-            instance.line += text + "。\n";
-            instance.resultText = instance.line;
+            instance.transcriptedText += text + "。\n";
+            instance.resultText = instance.transcriptedText;
             instance.recognition.stop();
           } else {
-            instance.resultText = instance.line + text;
-            instance.flag_speech = 1;
+            instance.resultText = instance.transcriptedText + text;
+            instance.flagSpeech = 1;
           }
         }
       };
 
-      this.flag_speech = 0;
+      this.flagSpeech = 0;
       this.recognition.start();
-      console.log("録音スタート");
+      console.log("recognition.start");
 
       // textarea拡張の設定
       window.$(() => {
@@ -332,7 +336,7 @@ export default {
       }
       this.recorder &&
         this.recorder.exportWAV((wav) => {
-          console.log("エクスポート完了");
+          console.log("wav exported");
           const request = axios.create({
             baseURL: "https://slack.com/api",
           });
@@ -349,10 +353,10 @@ export default {
           request
             .post("/files.upload", params)
             .then((res) => {
-              console.log(res);
+              console.log("slack result", res);
               this.recorder.clear();
               this.resultText = "";
-              this.line = "";
+              this.transcriptedText = "";
             })
             .catch((e) => {
               console.log("axios Error : ", e);
@@ -424,9 +428,6 @@ export default {
      */
     restore_input_from_cookie() {
       let cookies = this.get_cookies();
-      for (let key of this.COOKIE_KEYS) {
-        window.$("#" + key).val(cookies[key]);
-      }
       let lang = cookies[this.LANG_KEY];
       if (lang) {
         let radio = Object.values(window.$(`.uk-radio[value=${lang}]`));
@@ -441,9 +442,6 @@ export default {
      */
     save_input_to_cookie() {
       let data = {};
-      for (let key of this.COOKIE_KEYS) {
-        data[key] = window.$("#" + key).val();
-      }
       let lang_radios = window.$(".uk-radio:checked");
       if (lang_radios.length >= 0) {
         data[this.LANG_KEY] = lang_radios[0].value;
