@@ -335,33 +335,37 @@ export default {
         channels = "test";
       }
       this.recorder &&
-        this.recorder.exportWAV((wav) => {
-          console.log("wav exported");
-          const request = axios.create({
-            baseURL: "https://slack.com/api",
-          });
-
-          const params = new FormData();
-          params.append("channels", "#test");
-          params.append("file", wav);
-          params.append("token", this.oauthToken);
-          params.append("initial_comment", this.resultText);
-          // ダウンロード時のファイル名
-          params.append("filename", fileName);
-          // slackに表示されるファイルのタイトル
-          params.append("title", fileName);
-          request
-            .post("/files.upload", params)
-            .then((res) => {
-              console.log("slack result", res);
-              this.recorder.clear();
-              this.resultText = "";
-              this.transcriptedText = "";
-            })
-            .catch((e) => {
-              console.log("axios Error : ", e);
+        this.recorder
+          .exportWAV((wav) => {
+            console.log("wav exported");
+            const request = axios.create({
+              baseURL: "https://slack.com/api",
             });
-        });
+
+            const params = new FormData();
+            params.append("channels", "#test");
+            params.append("file", wav);
+            params.append("token", this.oauthToken);
+            params.append("initial_comment", this.resultText);
+            // ダウンロード時のファイル名
+            params.append("filename", fileName);
+            // slackに表示されるファイルのタイトル
+            params.append("title", fileName);
+            request
+              .post("/files.upload", params)
+              .then((res) => {
+                console.log("slack result", res);
+                this.recorder.clear();
+                this.resultText = "";
+                this.transcriptedText = "";
+              })
+              .catch((e) => {
+                console.log("axios Error : ", e);
+              });
+          })
+          .catch((e) => {
+            console.log("axios Error : ", e);
+          });
     },
     /**
      * 録音を開始
