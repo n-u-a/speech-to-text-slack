@@ -23,8 +23,8 @@ export default {
   },
   mounted() {
     this.installer = new InstallProvider({
-      clientId: "1377787479637.2814852320372",
-      clientSecret: "1c35f1441a533532abf40f481684cabe",
+      clientId: "xxxx",
+      clientSecret: "xxxx",
       stateSecret: "my-state-secret",
     });
     console.log("InstallProvider", InstallProvider);

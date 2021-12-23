@@ -1,7 +1,7 @@
 /* eslint-disable */
 import Vue from "vue";
 import VueRouter from "vue-router";
-const HelloWorld = () => import(/* webpackChunkName: "HelloWorld" */ "../components/HelloWorld.vue");
+const Transcript = () => import(/* webpackChunkName: "Transcript" */ "../components/Transcript.vue");
 // const Auth = () => import(/* webpackChunkName: "Auth" */ "../components/Auth.vue");
 
 Vue.use(VueRouter);
@@ -14,8 +14,8 @@ const routes = [
     // },
     {
         path: "/",
-        name: "HelloWorld",
-        component: HelloWorld,
+        name: "Transcript",
+        component: Transcript,
     },
 ];
 
